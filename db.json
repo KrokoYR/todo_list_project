@@ -1,19 +1,46 @@
 {
-  "posts": [
+  "todo-lists": [
     {
-      "id": 1,
-      "title": "json-server",
-      "author": "typicode"
-    }
-  ],
-  "comments": [
+      "title": "FirstOne",
+      "todos": [
+        {
+          "description": "FirstOneFirstTask",
+          "completed": false
+        },
+        {
+          "description": "FirstOneSecondTask",
+          "completed": false
+        }
+      ],
+      "id": 1
+    },
     {
-      "id": 1,
-      "body": "some comment",
-      "postId": 1
+      "title": "SecondOne",
+      "todos": [
+        {
+          "description": "SecondOneFirstTask",
+          "completed": false
+        },
+        {
+          "description": "SecondOneSecondTask",
+          "completed": false
+        }
+      ],
+      "id": 2
+    },
+    {
+      "title": "ThirdOne",
+      "todos": [
+        {
+          "description": "SecondOneFirstTask",
+          "completed": false
+        },
+        {
+          "description": "SecondOneSecondTask",
+          "completed": false
+        }
+      ],
+      "id": 3
     }
-  ],
-  "profile": {
-    "name": "typicode"
-  }
+  ]
 }
