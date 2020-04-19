@@ -1,18 +1,19 @@
 <template>
   <div class="todo__container">
-    <list-sub-menu 
+    <list-sub-menu
+    :createNew="formsOptions.newList"
     @on-undo="doUndo()"
     @on-redo="doRedo()"
     @on-discard="discard()"
     @on-sendforms="sendforms()"
     />
     <div class="title__row">
-      <input type="text" class="title" v-model.lazy="title">
+      <input type="text" class="title__input" maxlength="25" v-model.lazy="list.title">
     </div>
     <div class="list-wrapper">
       <ul class="list-group">
         <todo
-          v-for="(todo, index) in item.todos"
+          v-for="(todo, index) in list.todos"
           :key="index"
           :description="todo.description"
           :completed="todo.completed"
@@ -36,15 +37,16 @@ import CreateTodo from "../components/project/CreateTodoForm";
 export default {
   data() {
     return {
-      item: {
-        id: this.$route.params['id'],
-        title: "No title",
+      list: {
+        _id: this.$route.params['id'],
+        title: "Default title",
         todos: []
       },
       formsOptions: {
         canSendForms: false,
-        newItem: true
-      }
+        newList: true
+      },
+      loadedFromLocalStorate: false
     };
   },
   methods: {
@@ -54,19 +56,19 @@ export default {
           description: newTodoDescription, 
           completed: false 
         }
-        this.item.todos.push(newTodo);
+        this.list.todos.push(newTodo);
         this.commitToLocalStorage()
       }
     },
     toggleTodo(index) {
-      this.todos[index].completed = !this.todos[index].completed
+      this.list.todos[index].completed = !this.todos[index].completed
     },
     deleteTodo(index) {
-      this.todos.splice(index, 1);
+      this.list.todos.splice(index, 1);
       this.commitToLocalStorage()
     },
     editTodo(index, newTodoDescription) {
-      this.todos[index].description = newTodoDescription;
+      this.list.todos[index].description = newTodoDescription;
       this.commitToLocalStorage()
     },
     doUndo() {
@@ -76,17 +78,19 @@ export default {
 
     },
     discard() {
-
+      localStorage.removeItem(this.getId);
+      this.$router.push('/');
     },
     sendforms() {
       if (this.formsOptions.canSendForms) {
-        this.$pouchStorage.addTask(this.$pouch, this.item)
-        this.$router.push('/');  
+        this.$pouchStorage.addList(this.$pouch, this.list);
+        localStorage.removeItem(this.getId);
+        this.$router.push('/');
       }
     },
     commitToLocalStorage() {
-      const parsedItem = JSON.stringify(this.item);
-      localStorage.setItem(parsedItem);
+      const parsedList = JSON.stringify(this.list);
+      localStorage.setItem(this.getId, parsedList);
     }
   },
   components: { 
@@ -94,30 +98,53 @@ export default {
     Todo, 
     CreateTodo 
   },
+  computed: {
+    // function will return ID to set it for LocalStorage:
+    getId() {
+      return this.formsOptions.newList ? 'Default': this.list._id;
+    }
+  },
   mounted() {
     document.addEventListener("keydown", this.doUndo);
 
-    if (localStorage.getItem('item')) {
+    if (localStorage.getItem(this.getId)) {
+      this.loadedFromLocalStorate = true;
       try {
-        this.item = JSON.parse(localStorage.getItem('item'));
+        this.list = JSON.parse(localStorage.getItem(this.getId));
       } catch(e) {
-        localStorage.removeItem('item');
+        localStorage.removeItem(this.getId);
       }
     }
   },
   created() {
-    this.$pouchStorage.getDBItem(this.$pouch, 'lists', this.$route.params.id).then((item) => {
-      if (item) {
+    if (this.$route.name === 'CreateList') {
+      // If there is no ID => set item to LocalStorage by 'Default' 
+      // and remove it if component is destroyed:
+      const parsedList = JSON.stringify(this.list);
+      localStorage.setItem(this.getId, parsedList);
+      this.formsOptions.canSendForms = true;
+    } else {
+      this.$pouchStorage.getDBItem(this.$pouch, 'lists', this.$route.params.id).then((list) => {
+      if (list) {
         this.formsOptions.canSendForms = true
-        this.formsOptions.newItem = false
-        this.item = item
-      } else {
-        this.formsOptions.canSendForms = true
+        this.formsOptions.newList = false
+        // If no data at LocalStorage => load data from pouchDB:
+        if (!this.loadedFromLocalStorate) {
+          this.list = list;
+          const parsedList = JSON.stringify(this.list);
+          localStorage.setItem(this.getId, parsedList);
+        } else {
+          // resetting _rev - this will let pouchDB call put() function without conflict: 
+          this.list._rev = list._rev;
+        }
       }
     })
+    }    
   },
   beforeDestroy() {
-    localStorage.removeItem('item');
+    if(this.formsOptions.newList) {
+      localStorage.removeItem(this.getId);
+    }
     window.removeEventListener('keydown', this.doUndo);
     window.removeEventListener('keydown', this.doRedo);
   }
@@ -144,17 +171,24 @@ export default {
   .title-row {
     display: flex;
     flex-wrap: wrap;
-    margin-right: -15px;
-    margin-left: -15px;
   }
 
-  .title {
-    position: relative;
-    width: 100%;
-    padding-left: 15px;
-    padding-right: 15px;
-    flex: 0 0 100%;
+  .title__input {
+    margin-bottom: 1rem;
+    margin-right: -15px;
+    margin-left: -15px;
+
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+
     max-width: 100%;
+    width: 100%;
+    flex: 0 0 100%;
+    text-align: center;
+    font-size: 2rem;
+    line-height: 1.5;
+    font-weight: 400;
+    transition: 0.15s
   }
 
   .list-wrapper{
@@ -200,6 +234,11 @@ export default {
       flex: 0 0 83.333%;
       max-width: 83.333%;
     }
+
+    .title__input {
+      flex: 0 0 83.333%;
+      max-width: 83.333%;
+    }
   }
   @media (min-width: 768px) {
     .todo__container{
@@ -212,6 +251,11 @@ export default {
     }
 
     .list-group {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+
+    .title__input {
       flex: 0 0 50%;
       max-width: 50%;
     }
