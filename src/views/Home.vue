@@ -1,32 +1,43 @@
 <template>
-  <div class="list-group">
-    <div 
-    class="list"
-    v-for="list of todoLists"
-    :key="list.id"
-    >
-      <div class="list__wrapper">
-        <button class="item__edit" @click="linkTo(list.id)">
-          <span class="fa fa-edit"></span>
+  <div class="list-group__wrapper">
+    <div class="link__wrapper">
+      <router-link :to="'/todolists/new/'" class="link__create">Create new...<span class="fa fa-pencil"></span></router-link>
+    </div>
+    <div class="list-group">
+      <div 
+      class="list"
+      v-for="list of todoLists"
+      :key="list.id"
+      >
+        <div class="list__wrapper">
+          <button class="btn item__edit" @click="linkTo(list._id)">
+            <span class="fa fa-edit"></span>
+          </button>
+          <h4 class="list__title">{{ list.title }}</h4>
+          <ul class="list__items">
+            <li 
+            class="list__item"
+            v-for="(todo, index) of list.todos" 
+            :key="index"
+            >
+              <span class="item__check" v-if="todo.completed">&#10004;</span>
+              <span class="item__check" v-else>&#10008;</span>
+              <p class="item__text" :class="{ completed: todo.completed }">{{ todo.description }}</p>
+            </li>
+          </ul>
+        </div>      
+        <confirmation v-if="showModal" @close="showModal=false" @submit="deleteList(list)">
+          <template v-slot:header>
+            Delete list
+          </template>
+          <template v-slot:body>
+            Are you sure you want to delete this todo-list?
+          </template>
+        </confirmation>
+        <button class="btn item__delete" @click="openModal">
+          <span class="fa fa-trash"></span>
         </button>
-        <h4 class="list__title">{{ list.title }}</h4>
-        <ul class="list__items">
-          <li 
-          class="list__item"
-          v-for="(todo, index) of list.todos" 
-          :key="index"
-          >
-            <span v-if="todo.completed">&#10004;</span>
-            <span v-else>&#10008;</span>
-            <span class="item__text" :class="{ completed: todo.completed }">{{ todo.description }}</span>
-          </li>
-        </ul>
-        <p class="item__footer"><small class="footer__text">Last updated 3 mins ago</small></p>  
-      </div>      
-      <confirmation v-if="showModal" @close="showModal=false" @submit="deleteList(list)" />
-      <button class="item__delete" @click="openModal">
-        <span class="fa fa-trash"></span>
-      </button>
+      </div>
     </div>
   </div>
 </template>
@@ -44,7 +55,7 @@ export default {
   },
   methods: {
     linkTo(id) {
-      this.$router.push({name: 'TodosView', params: {id}});
+      this.$router.push({path:'/todolists/edit/' + id});
     },
     deleteList(deletedList) {
       this.showModal = false;
@@ -57,8 +68,20 @@ export default {
   components: {
     confirmation
   },
-  async created() {
-    
+  created() {
+    this.$pouchStorage.fetchItemsDB(this.$pouch, 'lists', {
+      saveID: true,
+      query: {
+        selector: {
+          _id: { $gte: null },
+        },
+        sort: ['_id']
+      }
+    }).then((docs) => {
+      this.todoLists = docs;
+    }).catch((error) => {
+      console.error(error);  
+    })
   }
 }
 </script>
@@ -68,12 +91,44 @@ export default {
     box-sizing: border-box;
   }
 
+  .list-group__wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-right: 1rem;
+    margin-left: 1rem;
+  }
+
+  .link__wrapper {
+    display: block;
+  }
+
+  .link__create {
+    float: right;
+    margin-top: 1.25rem;
+    width: fit-content;
+    padding: 0.75rem;
+
+    background: transparent;
+    color: royalblue;
+    border: 1px solid royalblue;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+  
+  .link__create:hover {
+    color: white;
+    background: royalblue;
+  }
+
+  .fa-pencil {
+    margin-left: 0.25rem;
+  }
+
   .list-group {
     display: flex;
     flex-direction: column;
-    margin-top: 2rem;
-    margin-right: 1rem;
-    margin-left: 1rem;
+    margin-top: 0.5rem;
   }
 
   .list {
@@ -81,19 +136,23 @@ export default {
     margin-bottom: 15px;
     border: 1px solid rgba(0,0,0,.125);
     border-radius: .25rem;
-    max-width: 300px;
+    width: 18rem;
+    height: 250px;
 
-    transition: padding 0.5s;
+    transition: width 0.5s;
   }
 
   .list:hover {
     box-shadow: 0 0 5px 2px royalblue;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    width: 20rem;
   }
 
   .list__wrapper {
     padding: 1.25rem;
+  }
+
+  .btn {
+    transition: 0.3s;
   }
 
   .item__edit {
@@ -136,22 +195,28 @@ export default {
   }
 
   .list__item {
+    width: 100%;
     text-align: center;
     margin-bottom: 0.35rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    display: flex;
+    flex-direction: row;
+  }
+
+  .item__check {
+    color: crimson;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
   }
   
   .item__text {
-    word-wrap: none;
-    text-overflow: ellipsis;
-  }
-
-  .item__footer {
+    margin: 0;
+    padding: 0;
     text-align: center;
-  }
 
-  .footer__text {    
-    word-wrap: none;
+    white-space: nowrap;
+    overflow: hidden;
+    overflow-x: hidden;
     text-overflow: ellipsis;
   }
 
