@@ -5,7 +5,7 @@
 
         <div class="modal-header">
           <div class="header">
-            <slot>
+            <slot name="header">
               default header
             </slot>
           </div>
@@ -13,7 +13,7 @@
 
         <div class="modal-body">
           <div class="body">
-            <slot>
+            <slot name="body">
               default body
             </slot>
           </div>
@@ -21,11 +21,8 @@
 
         <div class="modal-footer">
           <div class="footer">
-            <slot>
-              default footer
-            </slot>
-            <button class="modal-default-button" @click="$emit('close')">Cancel</button>
-            <button class="modal-default-button" @click="$emit('submit')">Submit</button>
+            <button class="btn btn-submit" @click="$emit('submit')">Submit</button>
+            <button class="btn btn-cancel" @click="$emit('close')">Cancel</button>
           </div>
         </div>
 
@@ -61,7 +58,7 @@ export default {
   .modal-container {
     width: 300px;
     margin: 0px auto;
-    padding: 20px 30px;
+    padding: 1rem 1.25rem;
     background-color: #fff;
     border-radius: 2px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
@@ -69,17 +66,50 @@ export default {
     font-family: Helvetica, Arial, sans-serif;
   }
 
-  .modal-header h3 {
-    margin-top: 0;
-    color: #42b983;
+  .header {
+    font-size: 1.1rem;
+    font-weight: bold;
   }
 
   .modal-body {
     margin: 20px 0;
   }
 
-  .modal-default-button {
-    float: right;
+  .body {
+    font-size: 1rem;
+  }
+
+  .footer {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  .btn {
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+
+    transition: 0.3s;
+  }
+
+  .btn-submit {
+    color: crimson;
+  }
+
+  .btn-submit:hover {
+    color: white;
+    background: crimson;
+  }
+
+  .btn-cancel {
+    color: royalblue;
+  }
+
+  .btn-cancel:hover {
+    color: white;
+    background: royalblue;
   }
 
   /*
