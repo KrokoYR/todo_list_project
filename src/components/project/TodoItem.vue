@@ -6,11 +6,11 @@
       @click="$emit('on-toggle')"
       v-if="!isEditing"
     >
-      <input type="checkbox" class="todo-complete__input" v-model="completed">
+      <input type="checkbox" class="todo-complete__checkbox" v-model="completed">
       <span class="todo__description">{{ description }}</span>
     </button>
     <form v-else class="todo__edit" @submit.prevent>
-      <input type="checkbox" class="todo-complete__input" v-model="completed">
+      <input type="checkbox" class="todo-complete__checkbox" v-model="completed">
       <input
         type="text"
         class="edit-form"
@@ -101,7 +101,7 @@ export default {
     font-size: 1rem;
     line-height: 1.5;
     font-weight: 400;
-    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    transition: color .15s ease-in-out,background-color .3s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
   }
 
   .todo__item{
@@ -110,7 +110,7 @@ export default {
     flex-grow: 1;
   }
 
-  .todo-complete__input {
+  .todo-complete__checkbox {
     cursor: pointer;
     appearance: none;
     vertical-align: middle;
@@ -120,10 +120,10 @@ export default {
     vertical-align: top;
     border: 1px solid gray;
     border-radius: 4px;
-    transition: background 125ms cubic-bezier(0.1, 0.1, 0.25, 1);
+    transition: background-color 125ms cubic-bezier(0.1, 0.1, 0.25, 1);
   }
 
-  .todo-complete__input:checked {
+  .todo-complete__checkbox:checked {
     color: royalblue;
     border-color: royalblue;
     background-color: royalblue;
