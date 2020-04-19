@@ -1,6 +1,7 @@
 <template>
   <div class="submenu">
     <div class="submenu__wrapper">
+      <button class="btn btn__delete" @click="$emit('on-delete')" :disabled="!createNew">Delete <span class="fa fa-trash"></span></button>
       <button class="btn" @click="$emit('on-undo')"><span class="fa fa-undo"></span></button>
       <button class="btn" @click="$emit('on-redo')"><span class="fa fa-repeat"></span></button>
       <button class="btn btn__discard" @click="$emit('on-discard')">Discard <span class="fa fa-ban"></span></button>
@@ -58,6 +59,25 @@ export default {
     margin-left: 1px;
     color: white;
     background: black;
+  }
+
+  .btn__delete {
+    color: crimson;
+  }
+  
+  .btn__delete:hover {
+    color: white;
+    background: crimson;
+  }
+
+  .btn__delete:disabled {
+    opacity: 0.5;
+  }
+
+  .btn__delete:disabled:hover {
+    color: crimson;
+    background: transparent;
+    border-left: 1px solid rgba($color: #000000, $alpha: 0.25);
   }
   
   .btn__discard {
