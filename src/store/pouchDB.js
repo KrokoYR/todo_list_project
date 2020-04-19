@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
 
+const ListsDB = 'lists';
 
 export default {
   install(Vue) {
@@ -21,15 +22,15 @@ export default {
         newUUID = formsData._id;
       }
 
-      $pouchSession.get(newUUID, {}, 'lists').then(async doc => {
+      $pouchSession.get(newUUID, {}, ListsDB).then(async doc => {
         for(const key in formsData) {
           if(formsData[key] !== doc[key]) {
             doc[key] = formsData[key];
           }
         }
-        return $pouchSession.put(doc, {}, 'lists').catch((error) => {
-          console.error('Error on `addList(1)`, details:', error.status, '-', error.messages);
-          return false
+        return $pouchSession.put(doc, {}, ListsDB).catch((error) => {
+          console.error('Error on `addList(1)`, details:', error);
+          return false;
         })
       }).catch(() => {
         return $pouchSession.put({
@@ -45,11 +46,11 @@ export default {
       })
     }
 
-    Vue.prototype.$pouchStorage.deleteTask = function ($pouchSession, UUID) {
-      return $pouchSession.get(UUID, {}, 'tasks').then(() => {
-        Vue.prototype.$pouchStorage.deleteDBItem($pouchSession, 'tasks', UUID)
+    Vue.prototype.$pouchStorage.deleteList = function ($pouchSession, UUID) {
+      return $pouchSession.get(UUID, {}, ListsDB).then(() => {
+        Vue.prototype.$pouchStorage.deleteDBItem($pouchSession, ListsDB, UUID)
       }).catch((error) => {
-        console.error('Error on `deleteTask`, details:', error.status, '-', error.message)
+        console.error('Error on `deleteList`, details:', error.status, '-', error.message)
         return false
       })
     }
@@ -77,6 +78,15 @@ export default {
         return $pouchSession.put(doc, {}, dbName)
       }).catch((error) => {
         console.error('Error on `editDBItemAsObject`, details:', error.status, '-', error.message)
+        return false
+      })
+    }
+
+    Vue.prototype.$pouchStorage.getDBItem = function ($pouchSession, dbName, UUID) {
+      return $pouchSession.get(UUID, {}, dbName).then((doc) => {
+        return doc
+      }).catch((error) => {
+        console.error('Error on `getDBItem`, details:', error.status, '-', error.message)
         return false
       })
     }
