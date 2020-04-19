@@ -1,7 +1,6 @@
 <template>
   <nav class="navbar">
-    <router-link :to="'/'" class="navbar-link">Todo</router-link>
-    <router-link :to="'/todolists/new/'" class="navbar-link">Create new...</router-link>
+    <router-link :to="'/'" class="navbar__link">Todo</router-link>
   </nav>
 </template>
 
@@ -17,7 +16,7 @@ export default {
     box-shadow: 0 0 10px darkblue;
   }
 
-  .navbar-link {
+  .navbar__link {
     display: block;
     padding: 8px;
     padding-left: 20px;
@@ -27,7 +26,7 @@ export default {
     color:aliceblue;
   }
 
-  .navbar-link:hover {
+  .navbar__link:hover {
     background-color: darkblue;
   }
 </style>
