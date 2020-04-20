@@ -1,6 +1,7 @@
+// Libraries
 import Vue from 'vue'
 import router from './router'
-
+import store from './store'
 import PouchDB from 'pouchdb-browser'
 import PouchVue from 'pouch-vue'
 import PouchFind from 'pouchdb-find'
@@ -23,5 +24,6 @@ Vue.use(PouchStorage);
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')
