@@ -61,12 +61,14 @@ export default {
     };
   },
   methods: {
+    // Deleting list:
     async deleteList() {
       this.showModal = false;
       // Using async to wait till response from pouchDB, and after that pushing "Home" route:
       await this.$pouchStorage.deleteList(this.$pouch, this.list._id);
       this.$router.push('/')
     },
+    // Open modal window to submit deleting list:
     openModal() {
       this.showModal = true;
     },
