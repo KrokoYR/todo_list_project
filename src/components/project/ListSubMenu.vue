@@ -1,12 +1,15 @@
 <template>
   <div class="submenu">
     <div class="submenu__wrapper">
-      <button class="btn btn__delete" @click="$emit('on-delete')" :disabled="!createNew">Delete <span class="fa fa-trash"></span></button>
+      <button class="btn btn__delete" @click="$emit('on-modal-delete')" v-if="!createNew">Delete <span class="fa fa-trash"></span></button>
       <button class="btn" @click="$emit('on-undo')"><span class="fa fa-undo"></span></button>
       <button class="btn" @click="$emit('on-redo')"><span class="fa fa-repeat"></span></button>
-      <button class="btn btn__discard" @click="$emit('on-discard')">Discard <span class="fa fa-ban"></span></button>
-      <button v-if="createNew" class="btn btn__confirm" @click="$emit('on-sendforms')">Done <span class="fa fa-plus-circle"></span></button>
-      <button v-else class="btn btn__confirm" @click="$emit('on-sendforms')">Save <span class="fa fa-floppy-o"></span></button>
+      <button class="btn btn__discard" @click="$emit('on-discard')">{{ cancelNewText }}<span class="fa fa-ban"></span></button>
+
+      <button
+      class="btn btn__confirm" 
+      @click="$emit('on-sendforms')"
+      :disabled="!canSendForms">{{ createNewText }} <span :class="createNewIcon"></span></button>
     </div>    
   </div>
 </template>
@@ -17,6 +20,22 @@ export default {
     createNew: {
       type: Boolean,
       required: true
+    },
+    canSendForms: {
+      type: Boolean,
+      required: true
+    }
+  },
+  computed: {
+    // Below computed values return strings. Attention to keep 'white-space'(' '):
+    createNewText() {
+      return this.createNew ? 'Done ' : 'Save ';
+    },
+    createNewIcon() {
+      return this.createNew ? 'fa fa-plus-circle' : 'fa fa-floppy-o';
+    },
+    cancelNewText() {
+      return this.createNew ? 'Cancel ' : 'Discard ';
     }
   }
 }
@@ -61,6 +80,22 @@ export default {
     background: black;
   }
 
+  .btn:disabled {
+    opacity: 0.5;
+  }
+
+  .btn:disabled:hover {
+    color: #000000;    
+    background: transparent;
+    border-left: 1px solid rgba($color: #000000, $alpha: 0.25);
+    border-radius: 0;
+    margin-left: 0;
+  }
+
+  .btn:last-child:disabled:hover {
+    border-right: 1px solid rgba($color: #000000, $alpha: 0.25);
+  }
+
   .btn__delete {
     color: crimson;
   }
@@ -68,16 +103,6 @@ export default {
   .btn__delete:hover {
     color: white;
     background: crimson;
-  }
-
-  .btn__delete:disabled {
-    opacity: 0.5;
-  }
-
-  .btn__delete:disabled:hover {
-    color: crimson;
-    background: transparent;
-    border-left: 1px solid rgba($color: #000000, $alpha: 0.25);
   }
   
   .btn__discard {
@@ -97,6 +122,25 @@ export default {
     color: white;
     background: royalblue;
     margin-right: 1px;
+  }
+
+  .btn__confirm:disabled {
+    position: relative;
+  }
+
+  .btn__confirm:disabled:hover {
+    color: royalblue;
+    margin-right: 0;
+  }
+
+  .btn__confirm:disabled:hover::after {
+    position: absolute;
+    content: 'Title or todos are empty!';
+    left: 100%;
+    top: -40%;
+    color: #000000;
+    background-color: blanchedalmond;
+    width: 100px;
   }
 
   @media (min-width: 576px) {
