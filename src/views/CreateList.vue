@@ -1,11 +1,21 @@
 <template>
-  <div class="todo__container">
+  <div class="todo__container">    
+    <confirmation v-if="showModal" @close="showModal=false" @submit="deleteList()">
+      <template v-slot:header>
+        Delete list
+      </template>
+      <template v-slot:body>
+        Are you sure you want to delete this todo-list?
+      </template>
+    </confirmation>
     <list-sub-menu
     :createNew="formsOptions.newList"
+    :canSendForms="canSendForms"
     @on-undo="doUndo()"
     @on-redo="doRedo()"
     @on-discard="discard()"
     @on-sendforms="sendforms()"
+    @on-modal-delete="openModal()"
     />
     <div class="title__row">
       <input type="text" class="title__input" maxlength="25" v-model.lazy="list.title">
@@ -30,6 +40,7 @@
 </template>
 
 <script>
+import confirmation from '../components/modal/confirmation.vue'
 import ListSubMenu from '../components/project/ListSubMenu.vue'
 import Todo from "../components/project/TodoItem";
 import CreateTodo from "../components/project/CreateTodoForm";
@@ -43,13 +54,23 @@ export default {
         todos: []
       },
       formsOptions: {
-        canSendForms: false,
         newList: true
       },
-      loadedFromLocalStorate: false
+      loadedFromLocalStorate: false,
+      showModal: false
     };
   },
   methods: {
+    async deleteList() {
+      this.showModal = false;
+      // Using async to wait till response from pouchDB, and after that pushing "Home" route:
+      await this.$pouchStorage.deleteList(this.$pouch, this.list._id);
+      this.$router.push('/')
+    },
+    openModal() {
+      this.showModal = true;
+    },
+    //Adding new todo:
     addTodo(newTodoDescription) {
       if(newTodoDescription) {  
         const newTodo = { 
@@ -60,29 +81,35 @@ export default {
         this.commitToLocalStorage()
       }
     },
+    // Toggle todo's complete state:
     toggleTodo(index) {
       this.list.todos[index].completed = !this.todos[index].completed
     },
+    // Deleting todo:
     deleteTodo(index) {
       this.list.todos.splice(index, 1);
       this.commitToLocalStorage()
     },
+    // Editing todo's descrition:
     editTodo(index, newTodoDescription) {
       this.list.todos[index].description = newTodoDescription;
       this.commitToLocalStorage()
     },
+    // Doing undo for todo:
     doUndo() {
       
     },
+    // Doing redo for todo:
     doRedo() {
 
     },
+    // Discard any changes and push "Home" to router
     discard() {
       localStorage.removeItem(this.getId);
       this.$router.push('/');
     },
     sendforms() {
-      if (this.formsOptions.canSendForms) {
+      if (this.canSendForms) {
         this.$pouchStorage.addList(this.$pouch, this.list);
         localStorage.removeItem(this.getId);
         this.$router.push('/');
@@ -94,14 +121,18 @@ export default {
     }
   },
   components: { 
+    confirmation,
     ListSubMenu,
     Todo, 
-    CreateTodo 
+    CreateTodo
   },
   computed: {
     // function will return ID to set it for LocalStorage:
     getId() {
       return this.formsOptions.newList ? 'Default': this.list._id;
+    },
+    canSendForms() {
+      return Boolean(this.list.title.length && this.list.todos.length);
     }
   },
   mounted() {
@@ -122,11 +153,9 @@ export default {
       // and remove it if component is destroyed:
       const parsedList = JSON.stringify(this.list);
       localStorage.setItem(this.getId, parsedList);
-      this.formsOptions.canSendForms = true;
     } else {
       this.$pouchStorage.getDBItem(this.$pouch, 'lists', this.$route.params.id).then((list) => {
       if (list) {
-        this.formsOptions.canSendForms = true
         this.formsOptions.newList = false
         // If no data at LocalStorage => load data from pouchDB:
         if (!this.loadedFromLocalStorate) {
