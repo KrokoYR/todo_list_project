@@ -60,28 +60,32 @@ export default {
     deleteList(deletedList) {
       this.showModal = false;
       this.todoLists = this.todoLists.filter(list => list !== deletedList)
+      this.$pouchStorage.deleteList(this.$pouch, deletedList._id);
     },
     openModal(){
       this.showModal = true;
+    },
+    fetchItems() {
+      this.$pouchStorage.fetchItemsDB(this.$pouch, 'lists', {
+        saveID: true,
+        query: {
+          selector: {
+            _id: { $gte: null },
+          },
+          sort: ['_id']
+        }
+      }).then((docs) => {
+        this.todoLists = docs;
+      }).catch((error) => {
+        console.error(error);  
+      })
     }
   },
   components: {
     confirmation
   },
   created() {
-    this.$pouchStorage.fetchItemsDB(this.$pouch, 'lists', {
-      saveID: true,
-      query: {
-        selector: {
-          _id: { $gte: null },
-        },
-        sort: ['_id']
-      }
-    }).then((docs) => {
-      this.todoLists = docs;
-    }).catch((error) => {
-      console.error(error);  
-    })
+    this.fetchItems();
   }
 }
 </script>
