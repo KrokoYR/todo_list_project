@@ -9,4 +9,4 @@ COPY package*.json ./
 
 RUN ["npm install"]
 
-CMD ["npm run server", "npm run dev"]
+CMD ["npm run dev"]
